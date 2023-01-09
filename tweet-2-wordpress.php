@@ -42,12 +42,11 @@ class Tweet2WordPress
 
 
     /**
-     * getRecentTweets
      * Get Recent Tweets by User
      * @param $userId
      * @return void
      */
-    private function getRecentTweets($userId): void
+    private function getRecentTweets($userId)
     {
         try {
             // Make Twitter API Endpoint URL
@@ -132,7 +131,7 @@ class Tweet2WordPress
      * Main
      * @return void
      */
-    public static function index(): void
+    public static function index()
     {
         $self = new Tweet2WordPress();
         $userId = $self->getUserIdByUserName();
