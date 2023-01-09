@@ -23,36 +23,39 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once( 'tweet2wp-config.php' );
+require_once( 'tweet.php' );
+require_once( 'tweet-media.php' );
+
 class Tweet2WordPress
 {
-    protected string $bearerToken = '';
-    protected string $twitterUserName = '';
-    protected string $twitterUserId = '';
-
-    protected string $twitterAPIBaseUrl = '';
+    protected string $bearerToken = BEARER_TOKEN;
+    protected string $twitterUserName = TWITTER_USER_NAME;
+    protected string $twitterAPIBaseUrl = 'https://api.twitter.com/2';
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        // Read Twitter API Keys
-        $this->twitterUserName = getenv('TWITTER_USER_NAME');
-        $this->bearerToken = getenv('BEARER_TOKEN');
-
-        // Read Twitter API Endpoints
-        $this->twitterAPIBaseUrl = getenv('TWITTER_ENDPOINT');
     }
 
-    private function getRecentTweets($userId)
+
+    /**
+     * getRecentTweets
+     * Get Recent Tweets by User
+     * @param $userId
+     * @return void
+     */
+    private function getRecentTweets($userId): void
     {
         try {
             // Make Twitter API Endpoint URL
-            $requestUrl = $this->twitterAPIBaseUrl . '/users/' . $userId . '/tweets';
+            $requestUrl = $this->twitterAPIBaseUrl . '/users/' . $userId . '/tweets?';
 
             // Make Request Parameters
             $params = array(
-                'tweet.fields' => 'author_Id,created_at,',
+                'tweet.fields' => 'author_id,created_at',
                 'media.fields' => 'url,preview_image_url,width,height,alt_text',
                 'expansions' => 'attachments.media_keys',
             );
@@ -69,22 +72,39 @@ class Tweet2WordPress
             if (200 === wp_remote_retrieve_response_code($response)) {
                 $responseBody = json_decode(wp_remote_retrieve_body($response), true, 512, JSON_THROW_ON_ERROR);
             } else {
-                throw new \RuntimeException('Failed to get response from twitter api');
+                throw new \RuntimeException('Failed to get response from twitter api: Could not get tweets');
             }
 
-            error_log(var_export($responseBody, true));
+            $tweetData = $responseBody['data'];
+            $tweetMedias = $responseBody['includes']['media'];
 
+            // Proceed Tweets and Post to WordPress
+            foreach ($tweetData as $data) {
+                $tweet = new Tweet($data);
+                if (!empty($data['attachments']['media_keys'])) {
+                    foreach ($data['attachments']['media_keys'] as $index => $key) {
+                        $tweet->media[$index] = new TweetMedia($key);
+                        $tweet->media[$index]->getMediaInformation($tweetMedias);
+                    }
+                }
+                $tweet->postTweet();
+            }
 
         } catch (Exception $exception) {
             error_log($exception->getMessage());
         }
-
     }
 
-    private function getUserIdByUserName() {
+    /**
+     * getUserIdByUserName
+     * Get Twitter UserID by User Name
+     * @return mixed|void
+     */
+    private function getUserIdByUserName()
+    {
         try {
             // Make Twitter API Endpoint URL
-            $requestUrl = $this->twitterAPIBaseUrl . 'users/by/username/' . $this->twitterUserName;
+            $requestUrl = $this->twitterAPIBaseUrl . '/users/by/username/' . $this->twitterUserName;
             // Make Request Arguments
             $args = array(
                 'headers' => array(
@@ -98,25 +118,30 @@ class Tweet2WordPress
             if (200 === wp_remote_retrieve_response_code($response)) {
                 $responseBody = json_decode(wp_remote_retrieve_body($response), true, 512, JSON_THROW_ON_ERROR);
             } else {
-                throw new \RuntimeException('Failed to get response from twitter api');
+                throw new \RuntimeException('Failed to get response from twitter api; Could not get user information');
             }
 
-            error_log(var_export($responseBody, true));
-
-            return $responseBody['id'];
+            return $responseBody['data']['id'];
 
         } catch (Exception $exception) {
             error_log($exception->getMessage());
         }
     }
 
-    public function index(): void
+    /**
+     * Main
+     * @return void
+     */
+    public static function index(): void
     {
-        $userId = $this->getUserIdByUserName();
-        $this->getRecentTweets($userId);
+        $self = new Tweet2WordPress();
+        $userId = $self->getUserIdByUserName();
+        $self->getRecentTweets($userId);
     }
 }
 
-add_action('schedule_twitter_request', array('Tweet2WordPress', 'index'));
 
-wp_schedule_event(strtotime('today'), 'hourly', 'schedule_twitter_request');
+if (!(wp_next_scheduled('schedule_twitter_request'))) {
+    add_action('schedule_twitter_request', array('Tweet2WordPress', 'index'));
+    wp_schedule_event(strtotime('2023-01-08 10:20:00'), 'hourly', 'schedule_twitter_request');
+}

@@ -21,3 +21,9 @@ node_modules/
 *.log
 *.sql
 *.sqlite
+
+# ignore configuration file
+tweet2wp-config.php
+
+# ignore everything in the "uploads" directory
+uploads/*
