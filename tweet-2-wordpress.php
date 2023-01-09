@@ -23,9 +23,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-require_once('tweet2wp-config.php');
-require_once('tweet.php');
-require_once('tweet-media.php');
+require_once( 'tweet2wp-config.php' );
+require_once( 'tweet.php' );
+require_once( 'tweet-media.php' );
 
 class Tweet2WordPress
 {
@@ -34,7 +34,7 @@ class Tweet2WordPress
     protected string $twitterAPIBaseUrl = 'https://api.twitter.com/2';
 
     /**
-     * Constructor1
+     * Constructor
      */
     public function __construct()
     {
@@ -78,6 +78,7 @@ class Tweet2WordPress
             $tweetData = $responseBody['data'];
             $tweetMedias = $responseBody['includes']['media'];
 
+            // Proceed Tweets and Post to WordPress
             foreach ($tweetData as $data) {
                 $tweet = new Tweet($data);
                 if (!empty($data['attachments']['media_keys'])) {
