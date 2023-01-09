@@ -42,12 +42,11 @@ class Tweet2WordPress
 
 
     /**
-     * getRecentTweets
      * Get Recent Tweets by User
      * @param $userId
      * @return void
      */
-    private function getRecentTweets($userId): void
+    private function getRecentTweets($userId)
     {
         try {
             // Make Twitter API Endpoint URL
@@ -132,7 +131,7 @@ class Tweet2WordPress
      * Main
      * @return void
      */
-    public static function index(): void
+    public static function index()
     {
         $self = new Tweet2WordPress();
         $userId = $self->getUserIdByUserName();
@@ -142,6 +141,6 @@ class Tweet2WordPress
 
 
 if (!(wp_next_scheduled('schedule_twitter_request'))) {
-    add_action('schedule_twitter_request', array('Tweet2WordPress', 'index'));
     wp_schedule_event(strtotime('2023-01-08 10:20:00'), 'hourly', 'schedule_twitter_request');
 }
+add_action('schedule_twitter_request', array('Tweet2WordPress', 'index'));

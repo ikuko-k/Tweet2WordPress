@@ -20,7 +20,7 @@ class TweetMedia
      * @param $medias
      * @return bool
      */
-    public function getMediaInformation($medias): bool
+    public function getMediaInformation($medias)
     {
         try {
             foreach ($medias as $media) {
@@ -43,7 +43,7 @@ class TweetMedia
      * @param $postId
      * @return bool|int
      */
-    public function uploadMedia($postId): bool|int
+    public function uploadMedia($postId)
     {
         try {
             $path = wp_parse_url($this->url, PHP_URL_PATH);

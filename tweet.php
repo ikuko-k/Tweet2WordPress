@@ -18,7 +18,7 @@ class Tweet
      * Post Tweet to WordPress
      * @return void
      */
-    public function postTweet(): void
+    public function postTweet()
     {
         try {
             // Get Category Object by Category Slug
@@ -84,7 +84,7 @@ class Tweet
      * @param $postId
      * @return string|bool
      */
-    private function makePostContent($postId): string|bool
+    private function makePostContent($postId)
     {
         try {
             // Get Post attached Medias
