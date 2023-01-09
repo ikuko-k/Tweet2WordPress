@@ -145,6 +145,3 @@ if (!(wp_next_scheduled('schedule_twitter_request'))) {
     add_action('schedule_twitter_request', array('Tweet2WordPress', 'index'));
     wp_schedule_event(strtotime('2023-01-08 10:20:00'), 'hourly', 'schedule_twitter_request');
 }
-
-add_action('test_twitter_request', array('Tweet2WordPress', 'index'));
-wp_schedule_single_event(strtotime('2023-01-08 13:45:00'), 'test_twitter_request');
