@@ -59,6 +59,11 @@ class Tweet
                         set_post_thumbnail($postId, $attachmentId);
                     }
                 }
+            } else {
+				$uploadDir = wp_upload_dir();
+				$defaultThumbnailUrl = $uploadDir->url . getenv(DEFAULT_THUMBNAIL_FILENAME);
+				$defaultThumbnailId = attachment_url_to_postid($defaultThumbnailUrl);
+				set_post_thumbnail($postId, $defaultThumbnailId);
             }
 
             // Make Post Content with Media and Links and update Post
